@@ -609,13 +609,39 @@ function pickSerieDG(minAh) {
     .sort((a,b) => a.ah - b.ah)[0] || SERIE_DG.find(b=>b.sku==="DG12-33");
 }
 
-function upsConfigByVa(va) {
-  if (va <= 700)  return { series:1, minAh:7  };
-  if (va <= 1100) return { series:1, minAh:9  };
-  if (va <= 1600) return { series:2, minAh:9  };
-  if (va <= 2500) return { series:2, minAh:18 };
-  if (va <= 4000) return { series:4, minAh:18 };
-  return              { series:8, minAh:18 };
+/*
+  Tabla basada en UPS reales del mercado.
+  La lógica combina VA + uso porque el tiempo de respaldo esperado
+  varía por aplicación:
+    - Hogar/oficina:    10-20 min  → Ah mínimos según el UPS original
+    - Servidor/red:     20-45 min  → Se sube un nivel de Ah para mayor autonomía
+    - Industrial:       45-90 min+ → Serie DG (más ciclos), Ah elevados
+
+  La configuración (series) define cuántas baterías de 12V se conectan
+  en serie para alcanzar el voltaje del banco del UPS:
+    1 batería  = 12V  (UPS residenciales pequeños)
+    2 baterías = 24V  (UPS residenciales/comerciales medianos)
+    4 baterías = 48V  (UPS comerciales/industriales grandes)
+    8 baterías = 96V  (UPS industriales de alta capacidad)
+
+  minAh = capacidad mínima por batería para cumplir el respaldo esperado.
+*/
+function upsConfigByVa(va, use) {
+  // home: respaldo ~15 min → Ah de fábrica
+  // server: respaldo ~30 min → un nivel más de Ah
+  // industrial: respaldo ~60 min+ → Serie DG con Ah elevados
+  const table = [
+    // [ vaMax, { home }, { server }, { industrial } ]
+    [ 700,  { series:1, minAh:7  }, { series:1, minAh:9  }, { series:1, minAh:33 } ],
+    [ 1000, { series:1, minAh:9  }, { series:2, minAh:9  }, { series:2, minAh:33 } ],
+    [ 1500, { series:1, minAh:9  }, { series:2, minAh:9  }, { series:2, minAh:40 } ],
+    [ 2200, { series:2, minAh:9  }, { series:2, minAh:18 }, { series:2, minAh:55 } ],
+    [ 3000, { series:2, minAh:18 }, { series:4, minAh:9  }, { series:4, minAh:33 } ],
+    [ 5000, { series:4, minAh:18 }, { series:4, minAh:18 }, { series:4, minAh:55 } ],
+    [ Infinity, { series:8, minAh:18 }, { series:8, minAh:18 }, { series:4, minAh:100 } ],
+  ];
+  const row = table.find(([vaMax]) => va <= vaMax);
+  return row ? row[1 + ['home','server','industrial'].indexOf(use)] : null;
 }
 
 function recommendUps() {
@@ -626,7 +652,7 @@ function recommendUps() {
   const use   = document.getElementById('ups-use').value;
 
   let config = UPS_EXACT[`${brand}|${model}`];
-  if (!config && va) config = upsConfigByVa(va);
+  if (!config && va) config = upsConfigByVa(va, use);
   if (!config) { document.getElementById('ups-nomatch').classList.add('show'); return; }
 
   const isIndustrial = use === 'industrial';
@@ -642,10 +668,11 @@ function recommendUps() {
     ? 'Tecnología AGM/GEL de alta capacidad con mayor número de ciclos de carga. Diseñada para UPS industriales, telecomunicaciones y sistemas críticos de respaldo.'
     : 'Tecnología AGM sellada (Valve Regulated Lead Acid). Sin mantenimiento, sin derrames, apta para instalación en interiores.';
 
+  const backupTime = { home: '10–20 min', server: '20–45 min', industrial: '45–90 min' }[use];
   const useNote = {
-    home:       "Batería AGM sellada sin mantenimiento. Ideal para entornos de hogar y oficina.",
-    server:     "Asegúrate de que el rack tenga buena ventilación. Las baterías AGM trabajan bien en posición vertical u horizontal.",
-    industrial: "Serie DG recomendada para entornos críticos: soporta mayor número de ciclos y temperaturas de operación más amplias. Programa inspección preventiva cada 12 meses.",
+    home:       `Configuración estándar para hogar u oficina. Respaldo estimado de ${backupTime} con carga típica. Batería AGM sellada, sin mantenimiento ni derrames.`,
+    server:     `Para servidores y equipos de red se recomienda mayor autonomía (${backupTime}), por eso se incrementa la capacidad en Ah respecto al mínimo de fábrica. Verifica ventilación del rack.`,
+    industrial: `Uso crítico requiere respaldo de ${backupTime} o más. La Serie DG soporta mayor número de ciclos de carga (ciclo profundo) y rangos de temperatura más amplios que la Serie D estándar. Programa inspección preventiva anual.`,
   }[use];
 
   const ctaParams = encodeURIComponent(`Hola, me interesa cotizar la batería ${bat.sku} (${qty} pieza[s]) para mi UPS ${brand} ${model}.`);
@@ -667,6 +694,7 @@ function recommendUps() {
           <span class="spec-chip"><strong>Configuración:</strong> ${cfgDesc}</span>
           <span class="spec-chip"><strong>Voltaje total:</strong> ${totalV} V</span>
           <span class="spec-chip"><strong>Capacidad:</strong> ${bat.ah} Ah</span>
+          <span class="spec-chip"><strong>Respaldo estimado:</strong> ${backupTime}</span>
         </div>
       </div>
     </div>
