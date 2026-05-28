@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de Baterías – Duravolt</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
       --primary: #086f87;
@@ -76,7 +77,12 @@
       transition: all 0.2s;
       background: transparent;
       color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+    .tab-btn svg { width: 18px; height: 18px; stroke: currentColor; flex-shrink: 0; }
     .tab-btn.active {
       background: var(--primary);
       color: #fff;
@@ -105,7 +111,7 @@
       align-items: center;
       gap: 10px;
     }
-    .card h2 .icon { font-size: 1.5rem; }
+    .card h2 svg { width: 22px; height: 22px; stroke: currentColor; flex-shrink: 0; }
 
     /* ── Form ─────────────────────────────────────────── */
     .form-grid {
@@ -154,7 +160,12 @@
       cursor: pointer;
       transition: background 0.2s, box-shadow 0.2s;
       box-shadow: 0 2px 8px rgba(8,111,135,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+    .btn-primary svg { width: 18px; height: 18px; stroke: currentColor; flex-shrink: 0; }
     .btn-primary:hover {
       background: var(--primary-dark);
       box-shadow: 0 4px 14px rgba(8,111,135,0.3);
@@ -178,7 +189,11 @@
       border-radius: 99px;
       background: var(--primary);
       color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
+    .badge svg { width: 12px; height: 12px; stroke: currentColor; }
 
     .product-card {
       background: var(--surface2);
@@ -191,7 +206,17 @@
       margin-bottom: 12px;
     }
     .product-card.primary-rec { border-color: var(--primary); }
-    .product-icon { font-size: 2.4rem; flex-shrink: 0; }
+    .product-icon {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .product-icon svg { width: 24px; height: 24px; stroke: var(--primary); }
     .product-info h4 { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 4px; }
     .product-info .model {
       color: var(--primary);
@@ -225,7 +250,11 @@
       font-size: 0.88rem;
       color: var(--text-muted);
       margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
     }
+    .note-box svg { width: 16px; height: 16px; stroke: var(--primary); flex-shrink: 0; margin-top: 1px; }
     .note-box strong { color: var(--primary); }
 
     .cta-box {
@@ -257,6 +286,7 @@
       box-shadow: 0 2px 10px rgba(8,111,135,0.25);
       transition: background 0.2s, box-shadow 0.2s;
     }
+    .cta-box a svg { width: 18px; height: 18px; stroke: currentColor; flex-shrink: 0; }
     .cta-box a:hover {
       background: var(--primary-dark);
       box-shadow: 0 4px 16px rgba(8,111,135,0.35);
@@ -273,9 +303,18 @@
       display: none;
     }
     .no-match.show { display: block; }
-    .no-match .emoji { font-size: 2.5rem; margin-bottom: 12px; }
+    .no-match svg { width: 36px; height: 36px; stroke: var(--text-muted); margin-bottom: 12px; }
     .no-match p { font-size: 0.9rem; color: var(--text-muted); }
-    .no-match a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .no-match a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+    }
+    .no-match a svg { width: 14px; height: 14px; stroke: var(--primary); margin: 0; }
   </style>
 </head>
 <body>
@@ -288,13 +327,20 @@
 
 <!-- Tabs -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('ups')">🔌 UPS / No-break</button>
-  <button class="tab-btn" onclick="switchTab('golf')">⛳ Carrito de Golf</button>
+  <button class="tab-btn active" onclick="switchTab('ups')">
+    <i data-lucide="plug"></i> UPS / No-break
+  </button>
+  <button class="tab-btn" onclick="switchTab('golf')">
+    <i data-lucide="car"></i> Carrito de Golf
+  </button>
 </div>
 
 <!-- ══ UPS ══════════════════════════════════════════════════════ -->
 <div id="tab-ups" class="card">
-  <h2><span class="icon">🔋</span> Recomendador para UPS / No-break</h2>
+  <h2>
+    <i data-lucide="battery-charging"></i>
+    Recomendador para UPS / No-break
+  </h2>
   <div class="form-grid">
     <div class="form-group">
       <label>Marca del UPS</label>
@@ -338,18 +384,25 @@
       </select>
     </div>
   </div>
-  <button class="btn-primary" onclick="recommendUps()">🔍 Buscar batería recomendada</button>
+  <button class="btn-primary" onclick="recommendUps()">
+    <i data-lucide="search"></i> Buscar batería recomendada
+  </button>
   <div class="result" id="ups-result"></div>
   <div class="no-match" id="ups-nomatch">
-    <div class="emoji">🤔</div>
+    <i data-lucide="help-circle"></i>
     <p>No encontramos una coincidencia exacta.<br>Contáctanos y te asesoramos personalmente.</p>
-    <p style="margin-top:12px"><a href="https://duravolt.com.mx/contacto">→ Ir a contacto</a></p>
+    <a href="https://duravolt.com.mx/contacto">
+      Ir a contacto <i data-lucide="arrow-right"></i>
+    </a>
   </div>
 </div>
 
 <!-- ══ GOLF ══════════════════════════════════════════════════════ -->
 <div id="tab-golf" class="card" style="display:none">
-  <h2><span class="icon">⛳</span> Recomendador para Carrito de Golf</h2>
+  <h2>
+    <i data-lucide="zap"></i>
+    Recomendador para Carrito de Golf
+  </h2>
   <div class="form-grid">
     <div class="form-group">
       <label>Marca del carrito</label>
@@ -386,22 +439,35 @@
       </select>
     </div>
   </div>
-  <button class="btn-primary" onclick="recommendGolf()">🔍 Buscar batería recomendada</button>
+  <button class="btn-primary" onclick="recommendGolf()">
+    <i data-lucide="search"></i> Buscar batería recomendada
+  </button>
   <div class="result" id="golf-result"></div>
   <div class="no-match" id="golf-nomatch">
-    <div class="emoji">🤔</div>
+    <i data-lucide="help-circle"></i>
     <p>No encontramos una coincidencia exacta.<br>Contáctanos y te asesoramos personalmente.</p>
-    <p style="margin-top:12px"><a href="https://duravolt.com.mx/contacto">→ Ir a contacto</a></p>
+    <a href="https://duravolt.com.mx/contacto">
+      Ir a contacto <i data-lucide="arrow-right"></i>
+    </a>
   </div>
 </div>
 
 <script>
 // ════════════════════════════════════════════════════
+//  SVG ICONS (inline, para uso dinámico en JS)
+// ════════════════════════════════════════════════════
+const ICON = {
+  battery:    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg>`,
+  zap:        `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  check:      `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  info:       `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  fileText:   `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+};
+
+// ════════════════════════════════════════════════════
 //  CATÁLOGO DURAVOLT REAL
 // ════════════════════════════════════════════════════
-
-// Serie D — VRLA AGM estándar (UPS, seguridad, telecomunicaciones)
-// Voltaje | Capacidad | SKU
 const SERIE_D = [
   { sku:"D12-22", v:12, ah:22 },
   { sku:"D12-18", v:12, ah:18 },
@@ -419,7 +485,6 @@ const SERIE_D = [
   { sku:"D4-4",   v:4,  ah:4  },
 ];
 
-// Serie DG — AGM/GEL ciclo profundo (solar, telecomunicaciones, UPS industriales)
 const SERIE_DG = [
   { sku:"DG12-230", v:12, ah:230 },
   { sku:"DG12-150", v:12, ah:150 },
@@ -431,24 +496,16 @@ const SERIE_DG = [
   { sku:"DG12-33",  v:12, ah:33  },
 ];
 
-// Serie DEV — Ciclo profundo para vehículos eléctricos / carrito de golf
 const SERIE_DEV = [
   { sku:"DEV12-110", v:12, ah:110 },
   { sku:"DEV8-180",  v:8,  ah:180 },
   { sku:"DEV6-250",  v:6,  ah:250 },
 ];
 
-// Serie DEVL — Litio LFP para carrito de golf
 const SERIE_DEVL = [
   { sku:"DEVL48-200", v:48, ah:200 },
   { sku:"DEVL48-104", v:48, ah:104 },
   { sku:"DEVL72-100", v:72, ah:100 },
-];
-
-// Serie DLFP — Litio para almacenamiento / inversores
-const SERIE_DLFP = [
-  { sku:"DLFP-48100R", v:48, ah:100 },
-  { sku:"DLFP-V5",     v:48, ah:null },
 ];
 
 // ════════════════════════════════════════════════════
@@ -496,10 +553,8 @@ const GOLF_MODELS = {
 };
 
 // ════════════════════════════════════════════════════
-//  LÓGICA UPS — elige batería Serie D por VA
+//  LÓGICA UPS
 // ════════════════════════════════════════════════════
-
-// Mapeo exacto marca+modelo → {baterías en serie, Ah mínimo recomendado}
 const UPS_EXACT = {
   "APC|Back-UPS BE500G":          { series:1, minAh:7  },
   "APC|Back-UPS BE700G":          { series:1, minAh:7  },
@@ -575,15 +630,15 @@ function recommendUps() {
   if (!config) { document.getElementById('ups-nomatch').classList.add('show'); return; }
 
   const isIndustrial = use === 'industrial';
-  const bat     = isIndustrial ? pickSerieDG(config.minAh) : pickSerieD(config.minAh);
-  const qty     = config.series;
-  const totalV  = bat.v * qty;
-  const serieDesc = qty > 1 ? `${qty} baterías en serie = ${totalV}V` : `1 batería 12V`;
+  const bat      = isIndustrial ? pickSerieDG(config.minAh) : pickSerieD(config.minAh);
+  const qty      = config.series;
+  const totalV   = bat.v * qty;
+  const cfgDesc  = qty > 1 ? `${qty} baterías en serie = ${totalV}V` : `1 batería 12V`;
 
   const serieLabel = isIndustrial
     ? 'Serie DG — AGM/GEL Ciclo Profundo (Industrial)'
     : 'Serie D — VRLA AGM Sellada';
-  const serieDesc2 = isIndustrial
+  const serieDesc = isIndustrial
     ? 'Tecnología AGM/GEL de alta capacidad con mayor número de ciclos de carga. Diseñada para UPS industriales, telecomunicaciones y sistemas críticos de respaldo.'
     : 'Tecnología AGM sellada (Valve Regulated Lead Acid). Sin mantenimiento, sin derrames, apta para instalación en interiores.';
 
@@ -594,34 +649,36 @@ function recommendUps() {
   }[use];
 
   const ctaParams = encodeURIComponent(`Hola, me interesa cotizar la batería ${bat.sku} (${qty} pieza[s]) para mi UPS ${brand} ${model}.`);
+  const icon = isIndustrial ? ICON.zap : ICON.battery;
 
   document.getElementById('ups-result').innerHTML = `
     <div class="result-header">
       <h3>Batería recomendada</h3>
-      <span class="badge">✓ Compatibilidad verificada</span>
+      <span class="badge">${ICON.check} Compatibilidad verificada</span>
     </div>
     <div class="product-card primary-rec">
-      <div class="product-icon">${isIndustrial ? '⚡' : '🔋'}</div>
+      <div class="product-icon">${icon}</div>
       <div class="product-info">
         <h4>Batería Duravolt ${serieLabel}</h4>
         <div class="model">${bat.sku} &nbsp;·&nbsp; ${bat.v}V / ${bat.ah}Ah</div>
-        <p>${serieDesc2}</p>
+        <p>${serieDesc}</p>
         <div class="specs">
           <span class="spec-chip"><strong>Cantidad:</strong> ${qty} pieza(s)</span>
-          <span class="spec-chip"><strong>Configuración:</strong> ${serieDesc}</span>
+          <span class="spec-chip"><strong>Configuración:</strong> ${cfgDesc}</span>
           <span class="spec-chip"><strong>Voltaje total:</strong> ${totalV} V</span>
           <span class="spec-chip"><strong>Capacidad:</strong> ${bat.ah} Ah</span>
         </div>
       </div>
     </div>
     <div class="note-box">
-      <strong>💡 Consejo:</strong> ${useNote}
+      ${ICON.info}
+      <span><strong>Consejo:</strong> ${useNote}</span>
     </div>
     <div class="cta-box">
       <div class="cta-title">¿Te interesa esta batería?</div>
       <p>Solicita una cotización sin compromiso y un asesor te contactará a la brevedad.</p>
       <a href="https://duravolt.com.mx/contacto?msg=${ctaParams}" target="_blank">
-        📋 Solicitar cotización
+        ${ICON.fileText} Solicitar cotización
       </a>
     </div>
   `;
@@ -631,8 +688,6 @@ function recommendUps() {
 // ════════════════════════════════════════════════════
 //  LÓGICA GOLF
 // ════════════════════════════════════════════════════
-
-// Voltaje sistema → configuración con plomo (DEV)
 function golfLeadConfig(voltage) {
   const configs = {
     48: { bat: SERIE_DEV.find(b=>b.sku==="DEV8-180"),  qty:6, desc:"6 × DEV8-180 en serie = 48V / 180Ah" },
@@ -641,7 +696,6 @@ function golfLeadConfig(voltage) {
   return configs[voltage] || null;
 }
 
-// Voltaje sistema → batería litio (DEVL)
 function golfLithiumConfig(voltage) {
   const map = {
     48: SERIE_DEVL.find(b=>b.sku==="DEVL48-200"),
@@ -666,16 +720,20 @@ function recommendGolf() {
   const isLi = tech === 'lithium';
 
   const techNote = isLi
-    ? "Las baterías de litio LFP Duravolt ofrecen hasta 3× más ciclos de vida que el plomo, mayor autonomía y no requieren mantenimiento de electrolito. Recomendadas para uso intensivo."
+    ? "Las baterías de litio LFP Duravolt ofrecen hasta 3 veces más ciclos de vida que el plomo, mayor autonomía y no requieren mantenimiento de electrolito. Recomendadas para uso intensivo."
     : "Las baterías de ciclo profundo DEV están optimizadas para vehículos eléctricos. Revisa el nivel de agua destilada cada 1-2 meses y mantén las terminales limpias.";
+
+  const brand = document.getElementById('golf-brand').value;
+  const modelVal = document.getElementById('golf-model').value;
+  const ctaParams = encodeURIComponent(`Hola, me interesa cotizar ${qty} batería(s) ${bat.sku} para mi carrito de golf ${brand} ${modelVal}.`);
 
   document.getElementById('golf-result').innerHTML = `
     <div class="result-header">
       <h3>Batería recomendada</h3>
-      <span class="badge">✓ Compatibilidad verificada</span>
+      <span class="badge">${ICON.check} Compatibilidad verificada</span>
     </div>
     <div class="product-card primary-rec">
-      <div class="product-icon">${isLi ? '⚡' : '🔋'}</div>
+      <div class="product-icon">${isLi ? ICON.zap : ICON.battery}</div>
       <div class="product-info">
         <h4>Batería Duravolt ${isLi ? 'Serie DEVL — Litio LFP' : 'Serie DEV — Ciclo Profundo'}</h4>
         <div class="model">${bat.sku} &nbsp;·&nbsp; ${bat.v}V / ${bat.ah !== null ? bat.ah+'Ah' : '—'}</div>
@@ -689,13 +747,14 @@ function recommendGolf() {
       </div>
     </div>
     <div class="note-box">
-      <strong>💡 Consejo de mantenimiento:</strong> ${techNote}
+      ${ICON.info}
+      <span><strong>Consejo de mantenimiento:</strong> ${techNote}</span>
     </div>
     <div class="cta-box">
       <div class="cta-title">¿Te interesa esta batería?</div>
       <p>Solicita una cotización sin compromiso y un asesor te contactará a la brevedad.</p>
-      <a href="https://duravolt.com.mx/contacto?msg=${encodeURIComponent(`Hola, me interesa cotizar ${qty} batería(s) ${bat.sku} para mi carrito de golf ${document.getElementById('golf-brand').value} ${document.getElementById('golf-model').value}.`)}" target="_blank">
-        📋 Solicitar cotización
+      <a href="https://duravolt.com.mx/contacto?msg=${ctaParams}" target="_blank">
+        ${ICON.fileText} Solicitar cotización
       </a>
     </div>
   `;
@@ -739,6 +798,9 @@ function clearResult(prefix) {
   r.classList.remove('show'); r.innerHTML = '';
   n.classList.remove('show');
 }
+
+// Inicializa Lucide en los elementos estáticos del HTML
+lucide.createIcons();
 </script>
 </body>
 </html>
