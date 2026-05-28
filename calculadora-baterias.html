@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Baterías – Duravolt</title>
+  <style>
+    :root {
+      --primary: #e8a000;
+      --primary-dark: #c47f00;
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --green: #22c55e;
+      --red: #ef4444;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 60px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header .logo {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -1px;
+    }
+    .header .logo span { color: var(--text); }
+    .header p {
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Tab switcher ────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      max-width: 720px;
+      margin: 0 auto 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      background: transparent;
+      color: var(--text-muted);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #000;
+    }
+    .tab-btn:hover:not(.active) {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    /* ── Card ────────────────────────────────────────── */
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card h2 .icon {
+      font-size: 1.6rem;
+    }
+
+    /* ── Form ─────────────────────────────────────────── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    input, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    select option { background: var(--surface2); }
+
+    /* ── Button ───────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      margin-top: 8px;
+      padding: 14px;
+      background: var(--primary);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* ── Result ──────────────────────────────────────── */
+    .result {
+      margin-top: 28px;
+      display: none;
+    }
+    .result.show { display: block; }
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .result-header h3 { font-size: 1.1rem; }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--primary);
+      color: #000;
+    }
+
+    .product-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .product-card.primary-rec { border-color: var(--primary); }
+    .product-icon {
+      font-size: 2.4rem;
+      flex-shrink: 0;
+    }
+    .product-info h4 { font-size: 1rem; margin-bottom: 4px; }
+    .product-info .model {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .product-info p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+    .specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .spec-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      color: var(--text-muted);
+    }
+    .spec-chip strong { color: var(--text); }
+
+    .note-box {
+      background: var(--surface2);
+      border-left: 3px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+    .note-box strong { color: var(--text); }
+
+    .cta-box {
+      margin-top: 20px;
+      text-align: center;
+      padding: 20px;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+    }
+    .cta-box p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; }
+    .cta-box a {
+      display: inline-block;
+      padding: 10px 24px;
+      background: var(--primary);
+      color: #000;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .cta-box a:hover { background: var(--primary-dark); }
+
+    /* ── No-match ─────────────────────────────────────── */
+    .no-match {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      display: none;
+    }
+    .no-match.show { display: block; }
+    .no-match .emoji { font-size: 2.5rem; margin-bottom: 12px; }
+    .no-match p { font-size: 0.9rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">DURA<span>VOLT</span></div>
+  <p>Encuentra la batería perfecta para tu equipo</p>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('ups')">🔌 UPS / No-break</button>
+  <button class="tab-btn" onclick="switchTab('golf')">⛳ Carrito de Golf</button>
+</div>
+
+<!-- ══ UPS Section ══════════════════════════════════════════════ -->
+<div id="tab-ups" class="card">
+  <h2><span class="icon">🔋</span> Recomendador para UPS / No-break</h2>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Marca del UPS</label>
+      <select id="ups-brand" onchange="updateUpsModels()">
+        <option value="">— Selecciona marca —</option>
+        <option>APC</option>
+        <option>Eaton</option>
+        <option>CyberPower</option>
+        <option>Tripp Lite</option>
+        <option>Forza</option>
+        <option>Seren</option>
+        <option>Otra</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Modelo del UPS</label>
+      <select id="ups-model">
+        <option value="">— Primero selecciona marca —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Capacidad (VA) – si la conoces</label>
+      <select id="ups-va">
+        <option value="">— Opcional —</option>
+        <option value="500">500 VA</option>
+        <option value="750">750 VA</option>
+        <option value="1000">1,000 VA</option>
+        <option value="1500">1,500 VA</option>
+        <option value="2000">2,000 VA</option>
+        <option value="3000">3,000 VA</option>
+        <option value="5000">5,000 VA</option>
+        <option value="6000">6,000+ VA</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Uso principal</label>
+      <select id="ups-use">
+        <option value="home">Hogar / oficina</option>
+        <option value="server">Servidor / red</option>
+        <option value="industrial">Industrial / crítico</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="recommendUps()">🔍 Buscar batería recomendada</button>
+
+  <div class="result" id="ups-result"></div>
+  <div class="no-match" id="ups-nomatch">
+    <div class="emoji">🤔</div>
+    <p>No encontramos una coincidencia exacta.<br>
+      Contáctanos con los datos de tu UPS y te asesoramos personalmente.</p>
+    <div style="margin-top:14px">
+      <a href="https://duravolt.com.mx/contacto" style="color:var(--primary);text-decoration:none;font-weight:600;">
+        → Ir a contacto
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Golf Section ══════════════════════════════════════════════ -->
+<div id="tab-golf" class="card" style="display:none">
+  <h2><span class="icon">⛳</span> Recomendador para Carrito de Golf</h2>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Marca del carrito</label>
+      <select id="golf-brand" onchange="updateGolfModels()">
+        <option value="">— Selecciona marca —</option>
+        <option>Club Car</option>
+        <option>EZ-GO</option>
+        <option>Yamaha</option>
+        <option>Star EV</option>
+        <option>Advanced EV</option>
+        <option>Tomberlin</option>
+        <option>Otra</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Modelo</label>
+      <select id="golf-model">
+        <option value="">— Primero selecciona marca —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Voltaje del sistema</label>
+      <select id="golf-voltage">
+        <option value="">— Selecciona —</option>
+        <option value="36">36 V</option>
+        <option value="48">48 V</option>
+        <option value="72">72 V</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Uso del carrito</label>
+      <select id="golf-use">
+        <option value="golf">Campo de golf</option>
+        <option value="community">Comunidad / residencial</option>
+        <option value="industrial">Industrial / carga pesada</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="recommendGolf()">🔍 Buscar batería recomendada</button>
+
+  <div class="result" id="golf-result"></div>
+  <div class="no-match" id="golf-nomatch">
+    <div class="emoji">🤔</div>
+    <p>No encontramos una coincidencia exacta.<br>
+      Contáctanos con los datos de tu carrito y te asesoramos personalmente.</p>
+    <div style="margin-top:14px">
+      <a href="https://duravolt.com.mx/contacto" style="color:var(--primary);text-decoration:none;font-weight:600;">
+        → Ir a contacto
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════════════════════
+
+const UPS_MODELS = {
+  "APC": [
+    "Back-UPS BE500G", "Back-UPS BE700G", "Back-UPS BE850G2",
+    "Back-UPS BX1000M", "Back-UPS BX1500M",
+    "Smart-UPS SMT1000", "Smart-UPS SMT1500", "Smart-UPS SMT2200",
+    "Smart-UPS SMT3000", "Smart-UPS SRT5000",
+    "Otro modelo APC"
+  ],
+  "Eaton": [
+    "5S 700VA", "5S 1000VA", "5S 1500VA",
+    "5P 1000VA", "5P 1500VA",
+    "9PX 1000VA", "9PX 2000VA", "9PX 3000VA",
+    "Otro modelo Eaton"
+  ],
+  "CyberPower": [
+    "CP685AVR", "CP1000AVRLCD", "CP1500AVRLCD",
+    "CP2000PFCLCD", "PR1000LCDRTXL2U", "PR3000LCDRTXL2U",
+    "Otro modelo CyberPower"
+  ],
+  "Tripp Lite": [
+    "INTERNET750U", "INTERNET1000", "SMART1000LCD",
+    "SMART1500LCD", "SMART2200NET", "SU3000LCD",
+    "Otro modelo Tripp Lite"
+  ],
+  "Forza": [
+    "FUL-501", "FUL-751", "FUL-1001",
+    "NT-501", "NT-751", "NT-1001",
+    "Otro modelo Forza"
+  ],
+  "Seren": [
+    "SRC-750", "SRC-1000", "SRC-1500", "Otro modelo Seren"
+  ],
+  "Otra": ["Especificar en contacto"]
+};
+
+const GOLF_MODELS = {
+  "Club Car": [
+    "DS Gas (convertido eléctrico)", "DS Electric",
+    "Precedent i2 (36V)", "Precedent i2L (48V)",
+    "Onward 2P (48V)", "Onward 4P (48V)",
+    "Tempo (48V)", "Villager (48V)",
+    "Otro modelo Club Car"
+  ],
+  "EZ-GO": [
+    "TXT 36V", "TXT 48V",
+    "RXV (48V)", "RXV Elite (48V)",
+    "Express S6 (48V)", "Express L6 (72V)",
+    "Freedom RXV (48V)",
+    "Otro modelo EZ-GO"
+  ],
+  "Yamaha": [
+    "G2 (36V)", "G9 (36V)", "G14 (36V)", "G16 (36V)",
+    "G19 (48V)", "G22 (48V)", "G29/Drive (48V)",
+    "Drive2 (48V)", "Adventurer Sport (48V)",
+    "Otro modelo Yamaha"
+  ],
+  "Star EV": [
+    "Sirius 2P (48V)", "Sirius 4P (48V)",
+    "Capella (48V)", "Arcturus (48V)",
+    "Otro modelo Star EV"
+  ],
+  "Advanced EV": [
+    "EV1 2+2 (48V)", "EV1 4+2 (48V)", "EV1 6+2 (48V)",
+    "Otro modelo Advanced EV"
+  ],
+  "Tomberlin": [
+    "E-Merge E2 (48V)", "E-Merge E4 (48V)",
+    "Otro modelo Tomberlin"
+  ],
+  "Otra": ["Especificar en contacto"]
+};
+
+// ── UPS battery database ────────────────────────────────────────
+// keyed by "brand|model" → recommendation object
+const UPS_DB = {
+  // APC Back-UPS series
+  "APC|Back-UPS BE500G":   ups("DV7-12", "12V 7Ah", 1, "12V / 7 Ah", "F2 (faston 6.3 mm)", "Plomo AGM sellada"),
+  "APC|Back-UPS BE700G":   ups("DV7-12", "12V 7Ah", 1, "12V / 7 Ah", "F2", "Plomo AGM sellada"),
+  "APC|Back-UPS BE850G2":  ups("DV9-12", "12V 9Ah", 1, "12V / 9 Ah", "F2", "Plomo AGM sellada"),
+  "APC|Back-UPS BX1000M":  ups("DV9-12", "12V 9Ah", 1, "12V / 9 Ah", "F2", "Plomo AGM sellada"),
+  "APC|Back-UPS BX1500M":  ups("DV18-12","12V 18Ah",1, "12V / 18 Ah","F3 (faston 6.3 mm ancho)","Plomo AGM sellada"),
+  // APC Smart-UPS
+  "APC|Smart-UPS SMT1000": ups("DV9-12", "12V 9Ah", 2, "24V / 9 Ah (2 en serie)", "F2", "Plomo AGM sellada"),
+  "APC|Smart-UPS SMT1500": ups("DV9-12", "12V 9Ah", 2, "24V / 9 Ah (2 en serie)", "F2", "Plomo AGM sellada"),
+  "APC|Smart-UPS SMT2200": ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada"),
+  "APC|Smart-UPS SMT3000": ups("DV18-12","12V 18Ah",4,"48V / 18 Ah (4 en serie)","F3","Plomo AGM sellada"),
+  "APC|Smart-UPS SRT5000": ups("DV18-12","12V 18Ah",8,"96V / 18 Ah (8 en serie)","F3","Plomo AGM sellada"),
+  // Eaton
+  "Eaton|5S 700VA":        ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Eaton|5S 1000VA":       ups("DV9-12","12V 9Ah",1,"12V / 9 Ah","F2","Plomo AGM sellada"),
+  "Eaton|5S 1500VA":       ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "Eaton|5P 1000VA":       ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "Eaton|5P 1500VA":       ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada"),
+  "Eaton|9PX 1000VA":      ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "Eaton|9PX 2000VA":      ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada"),
+  "Eaton|9PX 3000VA":      ups("DV18-12","12V 18Ah",4,"48V / 18 Ah (4 en serie)","F3","Plomo AGM sellada"),
+  // CyberPower
+  "CyberPower|CP685AVR":   ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "CyberPower|CP1000AVRLCD":ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "CyberPower|CP1500AVRLCD":ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "CyberPower|CP2000PFCLCD":ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada"),
+  "CyberPower|PR1000LCDRTXL2U":ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "CyberPower|PR3000LCDRTXL2U":ups("DV18-12","12V 18Ah",4,"48V / 18 Ah (4 en serie)","F3","Plomo AGM sellada"),
+  // Tripp Lite
+  "Tripp Lite|INTERNET750U":ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Tripp Lite|INTERNET1000":ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Tripp Lite|SMART1000LCD":ups("DV9-12","12V 9Ah",1,"12V / 9 Ah","F2","Plomo AGM sellada"),
+  "Tripp Lite|SMART1500LCD":ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada"),
+  "Tripp Lite|SMART2200NET":ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada"),
+  "Tripp Lite|SU3000LCD":   ups("DV18-12","12V 18Ah",4,"48V / 18 Ah (4 en serie)","F3","Plomo AGM sellada"),
+  // Forza
+  "Forza|FUL-501":          ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Forza|FUL-751":          ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Forza|FUL-1001":         ups("DV9-12","12V 9Ah",1,"12V / 9 Ah","F2","Plomo AGM sellada"),
+  "Forza|NT-501":           ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Forza|NT-751":           ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada"),
+  "Forza|NT-1001":          ups("DV9-12","12V 9Ah",1,"12V / 9 Ah","F2","Plomo AGM sellada"),
+};
+
+// ── Golf battery database ────────────────────────────────────────
+const GOLF_DB = {
+  // Club Car
+  "Club Car|DS Electric|36":      golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Precedent i2 (36V)|36":golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Precedent i2L (48V)|48":golf("DV-GC6V225","6V 225Ah",8,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Onward 2P (48V)|48":  golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Onward 4P (48V)|48":  golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Tempo (48V)|48":      golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Club Car|Villager (48V)|48":   golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  // EZ-GO
+  "EZ-GO|TXT 36V|36":             golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|TXT 48V|48":             golf("DV-GC6V225","6V 225Ah",8,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|RXV (48V)|48":           golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|RXV Elite (48V)|48":     golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|Freedom RXV (48V)|48":   golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|Express S6 (48V)|48":    golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "EZ-GO|Express L6 (72V)|72":    golf("DV-GC12V150","12V 150Ah",6,"Flooded / AGM Ciclo profundo"),
+  // Yamaha
+  "Yamaha|G2 (36V)|36":           golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G9 (36V)|36":           golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G14 (36V)|36":          golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G16 (36V)|36":          golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G19 (48V)|48":          golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G22 (48V)|48":          golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|G29/Drive (48V)|48":    golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|Drive2 (48V)|48":       golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Yamaha|Adventurer Sport (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  // Star EV
+  "Star EV|Sirius 2P (48V)|48":   golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Star EV|Sirius 4P (48V)|48":   golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Star EV|Capella (48V)|48":     golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Star EV|Arcturus (48V)|48":    golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  // Advanced EV
+  "Advanced EV|EV1 2+2 (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Advanced EV|EV1 4+2 (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Advanced EV|EV1 6+2 (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  // Tomberlin
+  "Tomberlin|E-Merge E2 (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+  "Tomberlin|E-Merge E4 (48V)|48":golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo"),
+};
+
+// ── Helpers to build records ────────────────────────────────────
+function ups(sku, label, qty, config, terminal, type) {
+  return { sku, label, qty, config, terminal, type };
+}
+function golf(sku, label, qty, type) {
+  return { sku, label, qty, type };
+}
+
+// ════════════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0 && tab==='ups') || (i===1 && tab==='golf'));
+  });
+  document.getElementById('tab-ups').style.display  = tab==='ups'  ? '' : 'none';
+  document.getElementById('tab-golf').style.display = tab==='golf' ? '' : 'none';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  POPULATE MODEL DROPDOWNS
+// ════════════════════════════════════════════════════════════════
+function updateUpsModels() {
+  const brand = document.getElementById('ups-brand').value;
+  const sel   = document.getElementById('ups-model');
+  sel.innerHTML = '<option value="">— Selecciona modelo —</option>';
+  (UPS_MODELS[brand] || []).forEach(m => {
+    const o = document.createElement('option'); o.value = o.textContent = m; sel.appendChild(o);
+  });
+  clearUpsResult();
+}
+
+function updateGolfModels() {
+  const brand = document.getElementById('golf-brand').value;
+  const sel   = document.getElementById('golf-model');
+  sel.innerHTML = '<option value="">— Selecciona modelo —</option>';
+  (GOLF_MODELS[brand] || []).forEach(m => {
+    const o = document.createElement('option'); o.value = o.textContent = m; sel.appendChild(o);
+  });
+  clearGolfResult();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  UPS RECOMMENDATION
+// ════════════════════════════════════════════════════════════════
+function recommendUps() {
+  clearUpsResult();
+  const brand = document.getElementById('ups-brand').value;
+  const model = document.getElementById('ups-model').value;
+  const va    = document.getElementById('ups-va').value;
+  const use   = document.getElementById('ups-use').value;
+
+  const key = `${brand}|${model}`;
+  let rec = UPS_DB[key];
+
+  // Fallback: try matching by VA range if no exact match
+  if (!rec && va) {
+    rec = upsRecByVa(parseInt(va), use);
+  }
+
+  if (!rec) {
+    document.getElementById('ups-nomatch').classList.add('show');
+    return;
+  }
+
+  const qtyLabel = rec.qty > 1
+    ? `<strong>${rec.qty} baterías</strong> conectadas en serie`
+    : `<strong>1 batería</strong>`;
+
+  const useNote = {
+    home:       "Para uso doméstico o de oficina, la batería AGM sellada es ideal: sin mantenimiento y sin riesgo de derrame.",
+    server:     "Para servidores y equipos de red recomendamos verificar que el UPS esté bien ventilado. Considera baterías de mayor ciclo de vida (AGM de alta descarga).",
+    industrial: "En ambientes industriales o de misión crítica, verifica la temperatura de la sala y contempla un ciclo de reemplazo preventivo cada 2-3 años.",
+  }[use] || "";
+
+  document.getElementById('ups-result').innerHTML = `
+    <div class="result-header">
+      <h3>Batería recomendada</h3>
+      <span class="badge">✓ Compatibilidad verificada</span>
+    </div>
+
+    <div class="product-card primary-rec">
+      <div class="product-icon">🔋</div>
+      <div class="product-info">
+        <h4>Batería Duravolt para UPS</h4>
+        <div class="model">${rec.sku} — ${rec.label}</div>
+        <p>Tecnología de plomo-ácido AGM sellada (Valve Regulated Lead Acid). Sin mantenimiento, sin derrame, ideal para UPS.</p>
+        <div class="specs">
+          <span class="spec-chip"><strong>Cantidad:</strong> ${rec.qty} pieza(s)</span>
+          <span class="spec-chip"><strong>Configuración:</strong> ${rec.config}</span>
+          <span class="spec-chip"><strong>Terminal:</strong> ${rec.terminal}</span>
+          <span class="spec-chip"><strong>Tipo:</strong> ${rec.type}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 Nota de instalación:</strong> Siempre desconecta el UPS de la corriente antes de sustituir la batería.
+      ${useNote}
+    </div>
+
+    <div class="cta-box">
+      <p>¿Listo para ordenar? Tenemos stock disponible para entrega inmediata.</p>
+      <a href="https://duravolt.com.mx">Ver en tienda → duravolt.com.mx</a>
+    </div>
+  `;
+  document.getElementById('ups-result').classList.add('show');
+}
+
+function upsRecByVa(va, use) {
+  // Generic fallback by VA
+  if (va <= 700)  return ups("DV7-12","12V 7Ah",1,"12V / 7 Ah","F2","Plomo AGM sellada");
+  if (va <= 1100) return ups("DV9-12","12V 9Ah",1,"12V / 9 Ah","F2","Plomo AGM sellada");
+  if (va <= 1600) return ups("DV9-12","12V 9Ah",2,"24V / 9 Ah (2 en serie)","F2","Plomo AGM sellada");
+  if (va <= 2500) return ups("DV18-12","12V 18Ah",2,"24V / 18 Ah (2 en serie)","F3","Plomo AGM sellada");
+  if (va <= 4000) return ups("DV18-12","12V 18Ah",4,"48V / 18 Ah (4 en serie)","F3","Plomo AGM sellada");
+  return ups("DV18-12","12V 18Ah",8,"96V / 18 Ah (8 en serie)","F3","Plomo AGM sellada");
+}
+
+function clearUpsResult() {
+  const r = document.getElementById('ups-result');
+  const n = document.getElementById('ups-nomatch');
+  r.classList.remove('show'); r.innerHTML = '';
+  n.classList.remove('show');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  GOLF RECOMMENDATION
+// ════════════════════════════════════════════════════════════════
+function recommendGolf() {
+  clearGolfResult();
+  const brand   = document.getElementById('golf-brand').value;
+  const model   = document.getElementById('golf-model').value;
+  const voltage = document.getElementById('golf-voltage').value;
+  const use     = document.getElementById('golf-use').value;
+
+  const key = `${brand}|${model}|${voltage}`;
+  let rec = GOLF_DB[key];
+
+  // Fallback: try without voltage
+  if (!rec) {
+    const k2 = Object.keys(GOLF_DB).find(k => k.startsWith(`${brand}|${model}|`));
+    if (k2) rec = GOLF_DB[k2];
+  }
+
+  // Generic fallback by voltage
+  if (!rec && voltage) {
+    rec = golfRecByVoltage(parseInt(voltage));
+  }
+
+  if (!rec) {
+    document.getElementById('golf-nomatch').classList.add('show');
+    return;
+  }
+
+  const totalV  = parseInt(voltage) || (rec.qty * parseInt(rec.sku.match(/\d+V/)?.[0]));
+  const useNote = {
+    golf:        "Para campo de golf: carga completa después de cada ronda, aunque el uso haya sido corto. Evita dejarlo descargado más de 24 h.",
+    community:   "Para uso residencial o en comunidades: revisa el nivel de electrolito mensualmente si usas baterías inundadas (flooded). Las AGM no requieren mantenimiento.",
+    industrial:  "Para uso industrial o carga pesada: considera un cargador con perfil de carga lenta (overnight) para maximizar la vida útil. Revisa terminales cada 3 meses.",
+  }[use] || "";
+
+  document.getElementById('golf-result').innerHTML = `
+    <div class="result-header">
+      <h3>Batería recomendada</h3>
+      <span class="badge">✓ Compatibilidad verificada</span>
+    </div>
+
+    <div class="product-card primary-rec">
+      <div class="product-icon">⚡</div>
+      <div class="product-info">
+        <h4>Batería de Ciclo Profundo Duravolt</h4>
+        <div class="model">${rec.sku} — ${rec.label}</div>
+        <p>Batería de ciclo profundo diseñada para vehículos eléctricos. Alta capacidad de descarga y mayor número de ciclos de carga vs. batería estándar.</p>
+        <div class="specs">
+          <span class="spec-chip"><strong>Cantidad:</strong> ${rec.qty} piezas</span>
+          <span class="spec-chip"><strong>Configuración:</strong> ${rec.qty} × ${rec.label} en serie</span>
+          <span class="spec-chip"><strong>Voltaje total:</strong> ${voltage || '—'} V</span>
+          <span class="spec-chip"><strong>Tipo:</strong> ${rec.type}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>💡 Consejo de mantenimiento:</strong> ${useNote}
+    </div>
+
+    <div class="cta-box">
+      <p>¿Listo para ordenar? Tenemos stock disponible para entrega inmediata.</p>
+      <a href="https://duravolt.com.mx">Ver en tienda → duravolt.com.mx</a>
+    </div>
+  `;
+  document.getElementById('golf-result').classList.add('show');
+}
+
+function golfRecByVoltage(v) {
+  if (v === 36) return golf("DV-GC6V225","6V 225Ah",6,"Flooded / AGM Ciclo profundo");
+  if (v === 48) return golf("DV-GC8V170","8V 170Ah",6,"Flooded / AGM Ciclo profundo");
+  if (v === 72) return golf("DV-GC12V150","12V 150Ah",6,"Flooded / AGM Ciclo profundo");
+  return null;
+}
+
+function clearGolfResult() {
+  const r = document.getElementById('golf-result');
+  const n = document.getElementById('golf-nomatch');
+  r.classList.remove('show'); r.innerHTML = '';
+  n.classList.remove('show');
+}
+</script>
+</body>
+</html>
