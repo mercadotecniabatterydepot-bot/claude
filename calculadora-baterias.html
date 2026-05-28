@@ -231,25 +231,36 @@
     .cta-box {
       margin-top: 20px;
       text-align: center;
-      padding: 22px;
+      padding: 28px 22px;
       background: var(--primary-light);
       border-radius: var(--radius);
-      border: 1.5px solid var(--border);
+      border: 1.5px solid var(--primary);
     }
-    .cta-box p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 14px; }
+    .cta-box .cta-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .cta-box p { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 18px; }
     .cta-box a {
-      display: inline-block;
-      padding: 11px 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 32px;
       background: var(--primary);
       color: #fff;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 0.9rem;
-      box-shadow: 0 2px 8px rgba(8,111,135,0.2);
-      transition: background 0.2s;
+      font-size: 1rem;
+      box-shadow: 0 2px 10px rgba(8,111,135,0.25);
+      transition: background 0.2s, box-shadow 0.2s;
     }
-    .cta-box a:hover { background: var(--primary-dark); }
+    .cta-box a:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 16px rgba(8,111,135,0.35);
+    }
 
     /* ── No-match ─────────────────────────────────────── */
     .no-match {
@@ -363,7 +374,6 @@
       <label>Voltaje del sistema</label>
       <select id="golf-voltage">
         <option value="">— Selecciona —</option>
-        <option value="36">36 V</option>
         <option value="48">48 V</option>
         <option value="72">72 V</option>
       </select>
@@ -476,9 +486,9 @@ const UPS_MODELS = {
 //  MODELOS DE CARRITO POR MARCA
 // ════════════════════════════════════════════════════
 const GOLF_MODELS = {
-  "Club Car":    ["DS Electric","Precedent i2 (36V)","Precedent i2L (48V)","Onward 2P (48V)","Onward 4P (48V)","Tempo (48V)","Villager (48V)","Otro modelo Club Car"],
-  "EZ-GO":       ["TXT 36V","TXT 48V","RXV (48V)","RXV Elite (48V)","Freedom RXV (48V)","Express S6 (48V)","Express L6 (72V)","Otro modelo EZ-GO"],
-  "Yamaha":      ["G2 (36V)","G9 (36V)","G14 (36V)","G16 (36V)","G19 (48V)","G22 (48V)","G29/Drive (48V)","Drive2 (48V)","Adventurer Sport (48V)","Otro modelo Yamaha"],
+  "Club Car":    ["DS Electric","Precedent i2L (48V)","Onward 2P (48V)","Onward 4P (48V)","Tempo (48V)","Villager (48V)","Otro modelo Club Car"],
+  "EZ-GO":       ["TXT 48V","RXV (48V)","RXV Elite (48V)","Freedom RXV (48V)","Express S6 (48V)","Express L6 (72V)","Otro modelo EZ-GO"],
+  "Yamaha":      ["G19 (48V)","G22 (48V)","G29/Drive (48V)","Drive2 (48V)","Adventurer Sport (48V)","Otro modelo Yamaha"],
   "Star EV":     ["Sirius 2P (48V)","Sirius 4P (48V)","Capella (48V)","Arcturus (48V)","Otro modelo Star EV"],
   "Advanced EV": ["EV1 2+2 (48V)","EV1 4+2 (48V)","EV1 6+2 (48V)","Otro modelo Advanced EV"],
   "Tomberlin":   ["E-Merge E2 (48V)","E-Merge E4 (48V)","Otro modelo Tomberlin"],
@@ -533,10 +543,15 @@ const UPS_EXACT = {
 };
 
 function pickSerieD(minAh) {
-  // Devuelve el modelo D12-xx más pequeño que cumple el mínimo de Ah
   return SERIE_D
     .filter(b => b.v === 12 && b.ah >= minAh)
     .sort((a,b) => a.ah - b.ah)[0] || SERIE_D.find(b=>b.sku==="D12-22");
+}
+
+function pickSerieDG(minAh) {
+  return SERIE_DG
+    .filter(b => b.ah >= minAh)
+    .sort((a,b) => a.ah - b.ah)[0] || SERIE_DG.find(b=>b.sku==="DG12-33");
 }
 
 function upsConfigByVa(va) {
@@ -559,16 +574,26 @@ function recommendUps() {
   if (!config && va) config = upsConfigByVa(va);
   if (!config) { document.getElementById('ups-nomatch').classList.add('show'); return; }
 
-  const bat     = pickSerieD(config.minAh);
+  const isIndustrial = use === 'industrial';
+  const bat     = isIndustrial ? pickSerieDG(config.minAh) : pickSerieD(config.minAh);
   const qty     = config.series;
   const totalV  = bat.v * qty;
   const serieDesc = qty > 1 ? `${qty} baterías en serie = ${totalV}V` : `1 batería 12V`;
 
+  const serieLabel = isIndustrial
+    ? 'Serie DG — AGM/GEL Ciclo Profundo (Industrial)'
+    : 'Serie D — VRLA AGM Sellada';
+  const serieDesc2 = isIndustrial
+    ? 'Tecnología AGM/GEL de alta capacidad con mayor número de ciclos de carga. Diseñada para UPS industriales, telecomunicaciones y sistemas críticos de respaldo.'
+    : 'Tecnología AGM sellada (Valve Regulated Lead Acid). Sin mantenimiento, sin derrames, apta para instalación en interiores.';
+
   const useNote = {
     home:       "Batería AGM sellada sin mantenimiento. Ideal para entornos de hogar y oficina.",
     server:     "Asegúrate de que el rack tenga buena ventilación. Las baterías AGM trabajan bien en posición vertical u horizontal.",
-    industrial: "En entornos críticos, programa reemplazo preventivo cada 2-3 años y monitorea la temperatura ambiente.",
+    industrial: "Serie DG recomendada para entornos críticos: soporta mayor número de ciclos y temperaturas de operación más amplias. Programa inspección preventiva cada 12 meses.",
   }[use];
+
+  const ctaParams = encodeURIComponent(`Hola, me interesa cotizar la batería ${bat.sku} (${qty} pieza[s]) para mi UPS ${brand} ${model}.`);
 
   document.getElementById('ups-result').innerHTML = `
     <div class="result-header">
@@ -576,11 +601,11 @@ function recommendUps() {
       <span class="badge">✓ Compatibilidad verificada</span>
     </div>
     <div class="product-card primary-rec">
-      <div class="product-icon">🔋</div>
+      <div class="product-icon">${isIndustrial ? '⚡' : '🔋'}</div>
       <div class="product-info">
-        <h4>Batería Duravolt Serie D — VRLA AGM Sellada</h4>
+        <h4>Batería Duravolt ${serieLabel}</h4>
         <div class="model">${bat.sku} &nbsp;·&nbsp; ${bat.v}V / ${bat.ah}Ah</div>
-        <p>Tecnología AGM sellada (Valve Regulated Lead Acid). Sin mantenimiento, sin derrames, apta para instalación en interiores.</p>
+        <p>${serieDesc2}</p>
         <div class="specs">
           <span class="spec-chip"><strong>Cantidad:</strong> ${qty} pieza(s)</span>
           <span class="spec-chip"><strong>Configuración:</strong> ${serieDesc}</span>
@@ -593,8 +618,11 @@ function recommendUps() {
       <strong>💡 Consejo:</strong> ${useNote}
     </div>
     <div class="cta-box">
-      <p>¿Listo para ordenar? Consulta disponibilidad y precio en nuestra tienda.</p>
-      <a href="https://duravolt.com.mx/baterias-litio-selladas/" target="_blank">Ver catálogo en duravolt.com.mx →</a>
+      <div class="cta-title">¿Te interesa esta batería?</div>
+      <p>Solicita una cotización sin compromiso y un asesor te contactará a la brevedad.</p>
+      <a href="https://duravolt.com.mx/contacto?msg=${ctaParams}" target="_blank">
+        📋 Solicitar cotización
+      </a>
     </div>
   `;
   document.getElementById('ups-result').classList.add('show');
@@ -607,7 +635,6 @@ function recommendUps() {
 // Voltaje sistema → configuración con plomo (DEV)
 function golfLeadConfig(voltage) {
   const configs = {
-    36: { bat: SERIE_DEV.find(b=>b.sku==="DEV6-250"),  qty:6, desc:"6 × DEV6-250 en serie = 36V / 250Ah" },
     48: { bat: SERIE_DEV.find(b=>b.sku==="DEV8-180"),  qty:6, desc:"6 × DEV8-180 en serie = 48V / 180Ah" },
     72: { bat: SERIE_DEV.find(b=>b.sku==="DEV12-110"), qty:6, desc:"6 × DEV12-110 en serie = 72V / 110Ah" },
   };
@@ -661,16 +688,15 @@ function recommendGolf() {
         </div>
       </div>
     </div>
-    ${isLi && voltage===36 ? `
-    <div class="note-box">
-      <strong>⚠️ Nota:</strong> Para sistemas de 36V no contamos con pack litio directo. Te recomendamos la opción de plomo DEV6-250 o consulta con nuestro equipo para una solución personalizada.
-    </div>` : `
     <div class="note-box">
       <strong>💡 Consejo de mantenimiento:</strong> ${techNote}
-    </div>`}
+    </div>
     <div class="cta-box">
-      <p>¿Listo para ordenar? Consulta disponibilidad y precio en nuestra tienda.</p>
-      <a href="https://duravolt.com.mx/baterias-litio-selladas/" target="_blank">Ver catálogo en duravolt.com.mx →</a>
+      <div class="cta-title">¿Te interesa esta batería?</div>
+      <p>Solicita una cotización sin compromiso y un asesor te contactará a la brevedad.</p>
+      <a href="https://duravolt.com.mx/contacto?msg=${encodeURIComponent(`Hola, me interesa cotizar ${qty} batería(s) ${bat.sku} para mi carrito de golf ${document.getElementById('golf-brand').value} ${document.getElementById('golf-model').value}.`)}" target="_blank">
+        📋 Solicitar cotización
+      </a>
     </div>
   `;
   document.getElementById('golf-result').classList.add('show');
