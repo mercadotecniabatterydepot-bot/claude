@@ -555,46 +555,100 @@ const GOLF_MODELS = {
 // ════════════════════════════════════════════════════
 //  LÓGICA UPS
 // ════════════════════════════════════════════════════
+/*
+  Especificaciones reales por modelo basadas en los kits de reemplazo
+  oficiales (RBC) de cada fabricante.
+
+  APC Back-UPS:
+    BE500G / BE700G   → RBC2:   1 × 12V 7.2Ah
+    BE850G2 / BX1000M → RBC17:  1 × 12V 9Ah
+    BX1500M           → RBC109: 2 × 12V 9Ah en serie (banco 24V)
+
+  APC Smart-UPS:
+    SMT1000 / SMT1500 → RBC6/7:  2 × 12V 9Ah  (24V)
+    SMT2200           → RBC55:   2 × 12V 12Ah  (24V)
+    SMT3000           → RBC43:   4 × 12V 9Ah   (48V)
+    SRT5000           → SRTRK2:  8 × 12V 9Ah   (96V)
+
+  Eaton 5S:
+    700VA             → 1 × 12V 7Ah
+    1000VA            → 1 × 12V 9Ah
+    1500VA            → 2 × 12V 9Ah  (24V)
+  Eaton 5P:
+    1000VA            → 2 × 12V 9Ah  (24V)
+    1500VA            → 2 × 12V 12Ah (24V)
+  Eaton 9PX:
+    1000VA            → 2 × 12V 9Ah  (24V)
+    2000VA            → 2 × 12V 18Ah (24V)
+    3000VA            → 4 × 12V 12Ah (48V)
+
+  CyberPower:
+    CP685AVR          → 1 × 12V 7Ah
+    CP1000AVRLCD      → 1 × 12V 9Ah
+    CP1500AVRLCD      → 2 × 12V 9Ah  (24V)
+    CP2000PFCLCD      → 2 × 12V 12Ah (24V)
+    PR1000LCDRTXL2U   → 2 × 12V 9Ah  (24V)
+    PR3000LCDRTXL2U   → 4 × 12V 9Ah  (48V)
+
+  Tripp Lite:
+    INTERNET750U      → 1 × 12V 7Ah
+    INTERNET1000      → 1 × 12V 9Ah
+    SMART1000LCD      → 2 × 12V 9Ah  (24V)
+    SMART1500LCD      → 2 × 12V 9Ah  (24V)
+    SMART2200NET      → 2 × 12V 12Ah (24V)
+    SU3000LCD         → 4 × 12V 12Ah (48V)
+
+  Forza / Seren: datos del fabricante (UPS de distribución latinoamericana).
+*/
 const UPS_EXACT = {
-  "APC|Back-UPS BE500G":          { series:1, minAh:7  },
-  "APC|Back-UPS BE700G":          { series:1, minAh:7  },
-  "APC|Back-UPS BE850G2":         { series:1, minAh:9  },
-  "APC|Back-UPS BX1000M":         { series:1, minAh:9  },
-  "APC|Back-UPS BX1500M":         { series:1, minAh:18 },
-  "APC|Smart-UPS SMT1000":        { series:2, minAh:9  },
-  "APC|Smart-UPS SMT1500":        { series:2, minAh:9  },
-  "APC|Smart-UPS SMT2200":        { series:2, minAh:18 },
-  "APC|Smart-UPS SMT3000":        { series:4, minAh:18 },
-  "APC|Smart-UPS SRT5000":        { series:8, minAh:18 },
-  "Eaton|5S 700VA":               { series:1, minAh:7  },
-  "Eaton|5S 1000VA":              { series:1, minAh:9  },
-  "Eaton|5S 1500VA":              { series:2, minAh:9  },
-  "Eaton|5P 1000VA":              { series:2, minAh:9  },
-  "Eaton|5P 1500VA":              { series:2, minAh:18 },
-  "Eaton|9PX 1000VA":             { series:2, minAh:9  },
-  "Eaton|9PX 2000VA":             { series:2, minAh:18 },
-  "Eaton|9PX 3000VA":             { series:4, minAh:18 },
-  "CyberPower|CP685AVR":          { series:1, minAh:7  },
-  "CyberPower|CP1000AVRLCD":      { series:1, minAh:7  },
-  "CyberPower|CP1500AVRLCD":      { series:2, minAh:9  },
-  "CyberPower|CP2000PFCLCD":      { series:2, minAh:18 },
-  "CyberPower|PR1000LCDRTXL2U":   { series:2, minAh:9  },
-  "CyberPower|PR3000LCDRTXL2U":   { series:4, minAh:18 },
-  "Tripp Lite|INTERNET750U":      { series:1, minAh:7  },
-  "Tripp Lite|INTERNET1000":      { series:1, minAh:7  },
-  "Tripp Lite|SMART1000LCD":      { series:1, minAh:9  },
-  "Tripp Lite|SMART1500LCD":      { series:2, minAh:9  },
-  "Tripp Lite|SMART2200NET":      { series:2, minAh:18 },
-  "Tripp Lite|SU3000LCD":         { series:4, minAh:18 },
-  "Forza|FUL-501":                { series:1, minAh:7  },
-  "Forza|FUL-751":                { series:1, minAh:7  },
-  "Forza|FUL-1001":               { series:1, minAh:9  },
-  "Forza|NT-501":                 { series:1, minAh:7  },
-  "Forza|NT-751":                 { series:1, minAh:7  },
-  "Forza|NT-1001":                { series:1, minAh:9  },
-  "Seren|SRC-750":                { series:1, minAh:7  },
-  "Seren|SRC-1000":               { series:1, minAh:9  },
-  "Seren|SRC-1500":               { series:2, minAh:9  },
+  // ── APC Back-UPS ─────────────────────────────────────
+  "APC|Back-UPS BE500G":          { series:1, minAh:7  },  // RBC2  – 12V 7.2Ah
+  "APC|Back-UPS BE700G":          { series:1, minAh:7  },  // RBC2  – 12V 7.2Ah
+  "APC|Back-UPS BE850G2":         { series:1, minAh:9  },  // RBC17 – 12V 9Ah
+  "APC|Back-UPS BX1000M":         { series:1, minAh:9  },  // RBC17 – 12V 9Ah
+  "APC|Back-UPS BX1500M":         { series:2, minAh:9  },  // RBC109 – 2×12V 9Ah (24V)
+  // ── APC Smart-UPS ────────────────────────────────────
+  "APC|Smart-UPS SMT1000":        { series:2, minAh:9  },  // RBC6  – 2×12V 9Ah  (24V)
+  "APC|Smart-UPS SMT1500":        { series:2, minAh:9  },  // RBC7  – 2×12V 9Ah  (24V)
+  "APC|Smart-UPS SMT2200":        { series:2, minAh:12 },  // RBC55 – 2×12V 12Ah (24V)
+  "APC|Smart-UPS SMT3000":        { series:4, minAh:9  },  // RBC43 – 4×12V 9Ah  (48V)
+  "APC|Smart-UPS SRT5000":        { series:8, minAh:9  },  // SRTRK2 – 8×12V 9Ah (96V)
+  // ── Eaton 5S ─────────────────────────────────────────
+  "Eaton|5S 700VA":               { series:1, minAh:7  },  // 1×12V 7Ah
+  "Eaton|5S 1000VA":              { series:1, minAh:9  },  // 1×12V 9Ah
+  "Eaton|5S 1500VA":              { series:2, minAh:9  },  // 2×12V 9Ah (24V)
+  // ── Eaton 5P ─────────────────────────────────────────
+  "Eaton|5P 1000VA":              { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "Eaton|5P 1500VA":              { series:2, minAh:12 },  // 2×12V 12Ah (24V)
+  // ── Eaton 9PX ────────────────────────────────────────
+  "Eaton|9PX 1000VA":             { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "Eaton|9PX 2000VA":             { series:2, minAh:18 },  // 2×12V 18Ah (24V)
+  "Eaton|9PX 3000VA":             { series:4, minAh:12 },  // 4×12V 12Ah (48V)
+  // ── CyberPower ───────────────────────────────────────
+  "CyberPower|CP685AVR":          { series:1, minAh:7  },  // 1×12V 7Ah
+  "CyberPower|CP1000AVRLCD":      { series:1, minAh:9  },  // 1×12V 9Ah
+  "CyberPower|CP1500AVRLCD":      { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "CyberPower|CP2000PFCLCD":      { series:2, minAh:12 },  // 2×12V 12Ah (24V)
+  "CyberPower|PR1000LCDRTXL2U":   { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "CyberPower|PR3000LCDRTXL2U":   { series:4, minAh:9  },  // 4×12V 9Ah  (48V)
+  // ── Tripp Lite ───────────────────────────────────────
+  "Tripp Lite|INTERNET750U":      { series:1, minAh:7  },  // 1×12V 7Ah
+  "Tripp Lite|INTERNET1000":      { series:1, minAh:9  },  // 1×12V 9Ah
+  "Tripp Lite|SMART1000LCD":      { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "Tripp Lite|SMART1500LCD":      { series:2, minAh:9  },  // 2×12V 9Ah  (24V)
+  "Tripp Lite|SMART2200NET":      { series:2, minAh:12 },  // 2×12V 12Ah (24V)
+  "Tripp Lite|SU3000LCD":         { series:4, minAh:12 },  // 4×12V 12Ah (48V)
+  // ── Forza ────────────────────────────────────────────
+  "Forza|FUL-501":                { series:1, minAh:7  },  // 1×12V 7Ah
+  "Forza|FUL-751":                { series:1, minAh:7  },  // 1×12V 7Ah
+  "Forza|FUL-1001":               { series:1, minAh:9  },  // 1×12V 9Ah
+  "Forza|NT-501":                 { series:1, minAh:7  },  // 1×12V 7Ah
+  "Forza|NT-751":                 { series:1, minAh:7  },  // 1×12V 7Ah
+  "Forza|NT-1001":                { series:1, minAh:9  },  // 1×12V 9Ah
+  // ── Seren ────────────────────────────────────────────
+  "Seren|SRC-750":                { series:1, minAh:7  },  // 1×12V 7Ah
+  "Seren|SRC-1000":               { series:1, minAh:9  },  // 1×12V 9Ah
+  "Seren|SRC-1500":               { series:2, minAh:9  },  // 2×12V 9Ah (24V)
 };
 
 function pickSerieD(minAh) {
